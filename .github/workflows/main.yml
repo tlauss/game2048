@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-artifacts
-          path: _work/*
+          path: target/*
 
       - name: Test
         run: mvn test
@@ -37,7 +37,7 @@ jobs:
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: ${{ github.job }}-test-reports
-#          path: _work/surefire-reports/*
+#          path: target/surefire-reports/*
 #        env:
 #          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 #
@@ -45,7 +45,7 @@ jobs:
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: ${{ github.job }}-coverage
-#          path: _work/site/jacoco/*
+#          path: target/site/jacoco/*
 
       - name: Package
         run: mvn package
@@ -54,12 +54,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-artifacts
-          path: _work/*.war
+          path: target/*.war
 
       - name: Deploy game2048
         run: |
           ls -a
-          cp ./_work/game2048/game2048/target/game2048.war /usr/local/tomcat/webapps/game2048.war
+          cp ./target/game2048/game2048/target/game2048.war /usr/local/tomcat/webapps/game2048.war
 
 #  test:
 #    runs-on: self-hosted
@@ -83,7 +83,7 @@ jobs:
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: ${{ github.job }}-test-reports
-#          path: _work/surefire-reports/*
+#          path: target/surefire-reports/*
 #        env:
 #          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 #
@@ -91,7 +91,7 @@ jobs:
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: ${{ github.job }}-coverage
-#          path: _work/site/jacoco/*
+#          path: target/site/jacoco/*
 #        env:
 #          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 #
@@ -136,7 +136,7 @@ jobs:
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: ${{ github.job }}-artifacts
-#          path: _work/*.war
+#          path: target/*.war
 #        env:
 #          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 #
@@ -149,7 +149,7 @@ jobs:
 #
 #      - name: Deploy game2048
 #        run: |
-#          sudo cp ./_work/game2048.war /usr/local/tomcat/webapps/game2048.war
+#          sudo cp ./target/game2048.war /usr/local/tomcat/webapps/game2048.war
 #          sudo service tomcat restart
 #    env:
 #      url: http://localhost:8080/game2048
