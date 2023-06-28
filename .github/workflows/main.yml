@@ -44,7 +44,6 @@ jobs:
 
       - name: Deploy game2048
         run: |
-          ls -a
           cp ./target/game2048.war /usr/local/tomcat/webapps
 
 ##  deploy_stop:

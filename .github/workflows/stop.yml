@@ -1,0 +1,13 @@
+name: CI/CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy_stop:
+    runs-on: self-hosted
+    needs: package
+    steps:
+      - name: Stop Tomcat
+        run: |
+          rm -rf /usr/local/tomcat/webapps
