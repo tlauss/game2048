@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
 env:
   maven_packages_cache: ".m2/repository"
   MAVEN_OPTS: "-Dmaven.repo.local=./$maven_packages_cache"
@@ -34,41 +32,33 @@ jobs:
 
       - name: Test
         run: mvn test
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
-      - name: Archive test reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.job }}-test-reports
-          path: _work/surefire-reports/*
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
-
-      - name: Archive code coverage
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.job }}-coverage
-          path: _work/site/jacoco/*
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#      - name: Archive test reports
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ github.job }}-test-reports
+#          path: _work/surefire-reports/*
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+#      - name: Archive code coverage
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ github.job }}-coverage
+#          path: _work/site/jacoco/*
 
       - name: Package
         run: mvn package
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-artifacts
           path: _work/*.war
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Deploy game2048
         run: |
-          cp ./_work/game2048.war /usr/local/tomcat/webapps/game2048.war
+          cp ./_work/game2048/game2048/target/game2048.war /usr/local/tomcat/webapps/game2048.war
 
 #  test:
 #    runs-on: self-hosted
