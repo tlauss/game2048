@@ -9,4 +9,4 @@ jobs:
     steps:
       - name: Stop Tomcat
         run: |
-          rm -rf .
+          rm -rf ./*
