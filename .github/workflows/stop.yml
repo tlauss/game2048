@@ -6,7 +6,6 @@ on:
 jobs:
   deploy_stop:
     runs-on: self-hosted
-    needs: package
     steps:
       - name: Stop Tomcat
         run: |
