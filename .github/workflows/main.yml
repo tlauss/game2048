@@ -82,7 +82,7 @@ jobs:
           distribution: 'oracle'
 
       - name: Analyze
-        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${{ secrets.sonar_login }} -Dsonar.qualitygate.wait=true
+        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${{ secrets.sonar_login }} -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes
         env:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
     continue-on-error: true
