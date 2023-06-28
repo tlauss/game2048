@@ -122,3 +122,4 @@ jobs:
       url: http://localhost:8080/game2048
     outputs:
       url: ${{ env.url }}
+
