@@ -20,16 +20,12 @@ jobs:
 
       - name: Build
         run: mvn compile
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ github.job }}-artifacts
           path: target/*
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
   test:
     runs-on: self-hosted
