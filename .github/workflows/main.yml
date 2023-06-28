@@ -32,19 +32,6 @@ jobs:
           name: ${{ github.job }}-artifacts
           path: target/*
 
-  test:
-    runs-on: self-hosted
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Java Version 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'oracle'
-
       - name: Test
         run: mvn test
         env:
@@ -66,40 +53,6 @@ jobs:
         env:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
-  analyze:
-    runs-on: self-hosted
-    needs:
-      - build
-      - test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Java Version 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'oracle'
-
-      - name: Analyze
-        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${{ secrets.sonar_login }} -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes
-        env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
-    continue-on-error: true
-
-  package:
-    runs-on: self-hosted
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Java Version 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'oracle'
-
       - name: Package
         run: mvn package
         env:
@@ -113,36 +66,121 @@ jobs:
         env:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
-  deploy_deploy:
-    runs-on: self-hosted
-    needs: package
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Deploy game2048
         run: |
           sudo cp ./target/game2048.war /usr/local/tomcat/webapps/game2048.war
           sudo service tomcat restart
-    env:
-      url: http://localhost:8080/game2048
-    outputs:
-      url: ${{ env.url }}
 
 
-#  deploy_stop:
+#  test:
 #    runs-on: self-hosted
-#    needs: package
-#    if: github.event_name == 'workflow_dispatch'
+#    needs: build
 #    steps:
 #      - name: Checkout code
 #        uses: actions/checkout@v3
 #
-#      - name: Stop Tomcat
+#      - name: Setup Java Version 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'oracle'
+#
+#      - name: Test
+#        run: mvn test
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+#      - name: Archive test reports
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ github.job }}-test-reports
+#          path: target/surefire-reports/*
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+#      - name: Archive code coverage
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ github.job }}-coverage
+#          path: target/site/jacoco/*
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+##  analyze:
+##    runs-on: self-hosted
+##    needs:
+##      - build
+##      - test
+##    steps:
+##      - name: Checkout code
+##        uses: actions/checkout@v3
+##
+##      - name: Setup Java Version 17
+##        uses: actions/setup-java@v3
+##        with:
+##          java-version: '17'
+##          distribution: 'oracle'
+##
+##      - name: Analyze
+##        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${{ secrets.sonar_login }} -Dsonar.qualitygate.wait=true
+##    continue-on-error: true
+#
+#  package:
+#    runs-on: self-hosted
+#    needs: build
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Setup Java Version 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'oracle'
+#
+#      - name: Package
+#        run: mvn package
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+#      - name: Archive artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ github.job }}-artifacts
+#          path: target/*.war
+#        env:
+#          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+#
+#  deploy_deploy:
+#    runs-on: self-hosted
+#    needs: package
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Deploy game2048
 #        run: |
-#          docker rm --force tomcat
-#          docker image rm --force game2048
+#          sudo cp ./target/game2048.war /usr/local/tomcat/webapps/game2048.war
+#          sudo service tomcat restart
 #    env:
-#        url: http://localhost:8080/game2048
+#      url: http://localhost:8080/game2048
 #    outputs:
-#        url: ${{ env.url }}
+#      url: ${{ env.url }}
+#
+#
+##  deploy_stop:
+##    runs-on: self-hosted
+##    needs: package
+##    if: github.event_name == 'workflow_dispatch'
+##    steps:
+##      - name: Checkout code
+##        uses: actions/checkout@v3
+##
+##      - name: Stop Tomcat
+##        run: |
+##          docker rm --force tomcat
+##          docker image rm --force game2048
+##    env:
+##        url: http://localhost:8080/game2048
+##    outputs:
+##        url: ${{ env.url }}
