@@ -12,8 +12,6 @@ env:
 jobs:
   build:
     runs-on: self-hosted
-#    container:
-#      image: maven:3.8.5-openjdk-17
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -35,12 +33,16 @@ jobs:
 
   test:
     runs-on: self-hosted
-    container:
-      image: maven:3.8.5-openjdk-17
     needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Java Version 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'oracle'
 
       - name: Test
         run: mvn test
@@ -65,14 +67,18 @@ jobs:
 
   analyze:
     runs-on: self-hosted
-    container:
-      image: maven:3.8.5-openjdk-17
     needs:
       - build
       - test
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Java Version 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'oracle'
 
       - name: Analyze
         run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$sonar_login -Dsonar.qualitygate.wait=true
@@ -82,12 +88,16 @@ jobs:
 
   package:
     runs-on: self-hosted
-    container:
-      image: maven:3.8.5-openjdk-17
     needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Java Version 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'oracle'
 
       - name: Package
         run: mvn package
