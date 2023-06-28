@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: 087973298c1f
+    runs-on: self-hosted
     container:
       image: maven:3.8.5-openjdk-17
     steps:
@@ -32,7 +32,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
   test:
-    runs-on: 087973298c1f
+    runs-on: self-hosted
     container:
       image: maven:3.8.5-openjdk-17
     needs: build
@@ -62,7 +62,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
   analyze:
-    runs-on: 087973298c1f
+    runs-on: self-hosted
     container:
       image: maven:3.8.5-openjdk-17
     needs:
@@ -79,7 +79,7 @@ jobs:
     continue-on-error: true
 
   package:
-    runs-on: 087973298c1f
+    runs-on: self-hosted
     container:
       image: maven:3.8.5-openjdk-17
     needs: build
@@ -101,7 +101,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
   deploy_deploy:
-    runs-on: 087973298c1f
+    runs-on: self-hosted
     needs: package
     if: github.event_name == 'workflow_dispatch'
     steps:
