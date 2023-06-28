@@ -15,7 +15,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java Version 17
         uses: actions/setup-java@v3
@@ -27,7 +27,7 @@ jobs:
         run: mvn compile
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-artifacts
           path: target/*
@@ -37,7 +37,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java Version 17
         uses: actions/setup-java@v3
@@ -51,7 +51,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Archive test reports
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-test-reports
           path: target/surefire-reports/*
@@ -59,7 +59,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Archive code coverage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-coverage
           path: target/site/jacoco/*
@@ -73,7 +73,7 @@ jobs:
       - test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java Version 17
         uses: actions/setup-java@v3
@@ -82,7 +82,7 @@ jobs:
           distribution: 'oracle'
 
       - name: Analyze
-        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$sonar_login -Dsonar.qualitygate.wait=true
+        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${{ secrets.sonar_login }} -Dsonar.qualitygate.wait=true
         env:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
     continue-on-error: true
@@ -92,7 +92,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Java Version 17
         uses: actions/setup-java@v3
@@ -106,7 +106,7 @@ jobs:
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-artifacts
           path: target/*.war
@@ -119,7 +119,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Remove Tomcat
         run: docker rm --force tomcat
@@ -129,9 +129,28 @@ jobs:
 
       - name: Build and run game2048 image
         run: |
+          docker rm --force tomcat
+          docker image rm --force game2048
           echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
           docker run --rm -d --name tomcat -p 8080:8080 game2048
     env:
       url: http://localhost:8080/game2048
     outputs:
       url: ${{ env.url }}
+
+  deploy_stop:
+    runs-on: self-hosted
+    needs: package
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Stop Tomcat
+        run: |
+          docker rm --force tomcat
+          docker image rm --force game2048
+    env:
+        url: http://localhost:8080/game2048
+    outputs:
+        url: ${{ env.url }}
