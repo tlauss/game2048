@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   maven_packages_cache: ".m2/repository"
@@ -134,4 +135,3 @@ jobs:
       url: http://localhost:8080/game2048
     outputs:
       url: ${{ env.url }}
-
