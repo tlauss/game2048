@@ -1,1 +1,170 @@
+name: CI/CD
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  maven_packages_cache: ".m2/repository"
+  MAVEN_OPTS: "-Dmaven.repo.local=./$maven_packages_cache"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Build
+        run: mvn compile
+        env:
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+          path: target/*
+        env:
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Restore Maven cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.maven_packages_cache }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Test
+        run: mvn test
+        env:
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test-Artifacts
+          path: |
+            target/surefire-reports/*
+            target/site/jacoco/*
+
+  analyze:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Restore Maven cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.maven_packages_cache }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Analyze with SonarQube
+        run: mvn sonar:sonar -Dsonar.projectKey=game2048 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$sonar_login -Dsonar.qualitygate.wait=true
+        env:
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Restore Maven cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.maven_packages_cache }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Package
+        run: mvn package
+        env:
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+          path: target/*.war
+
+  deploy_deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Remove Tomcat
+        run: docker rm --force tomcat
+
+      - name: Remove game2048 image
+        run: docker image rm --force game2048
+
+      - name: Build and run game2048 image
+        run: |
+          echo -e 'FROM tomcat:9-jdk17-openjdk-slim \n COPY ./target/game2048.war /usr/local/tomcat/webapps' | docker build -t game2048 -f- .
+          docker run --rm -d --name tomcat -p 8080:8080 game2048
+
+      - name: Deployment environment
+        run: |
+          echo "name=test" >> $GITHUB_ENV
+
+  deploy_stop:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Remove Tomcat
+        run: docker rm --force tomcat
+
+      - name: Remove game2048 image
+        run: docker image rm --force game2048
+
+      - name: Deployment environment
+        run: |
+          echo "name=test" >> $GITHUB_ENV
