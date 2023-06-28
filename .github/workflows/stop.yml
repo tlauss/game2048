@@ -1,4 +1,4 @@
-name: CI/CD
+name: remove artifacts
 
 on:
   workflow_dispatch:
@@ -9,4 +9,4 @@ jobs:
     steps:
       - name: Stop Tomcat
         run: |
-          rm -rf /usr/local/tomcat/webapps
+          ls -a

@@ -1,4 +1,4 @@
-name: CI/CD
+name: build, test and deploy game2048
 
 on:
   push:
