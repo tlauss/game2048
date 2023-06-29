@@ -39,3 +39,4 @@ jobs:
       - name: Deploy game2048
         run: |
           cp ./target/game2048.war /usr/local/tomcat/webapps
+          
